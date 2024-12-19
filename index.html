@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="style.css">
+    <title>Send a Love Letter!</title>
+    <style>
+        /* No additional styling changes as per your request */
+
+        /* Styling for the Emoji Animations */
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(1.5);
+            }
+        }
+
+        .emoji {
+            position: absolute;
+            animation: floatUp 1s forwards;
+            pointer-events: none;
+            font-size: 24px;
+            /* Adjust the z-index to ensure emojis appear above other elements */
+            z-index: 1000;
+        }
+
+        /* Optional: Style for the Response Buttons */
+        #response-buttons {
+            display: none; /* Hidden initially */
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #response-buttons button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 0 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff69b4; /* Pink background */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        #response-buttons button:hover {
+            background-color: #ff85c0; /* Lighter pink on hover */
+        }
+
+        /* Styling for the tsParticles Container */
+        #tsparticles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allows clicks to pass through */
+            z-index: 999; /* Ensure confetti appears above other elements */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- tsParticles Container for Confetti -->
+    <div id="tsparticles"></div>
+
+    <div style="margin-top: 200px;">
+        <div class="wrap">
+            <h1 style="margin-bottom: 100px;">A letter to Marie ♡</h1>
+            <div class="postcard">
+
+                <div class="letter">
+                    <form action="#" method="post" class="message_form">
+                        <p class="push">Dear </p>
+                        <input type="text" id="recipient" name="recipient_name" placeholder="name of recipient" class="push">
+                        <p>,</p><br>
+                        <label for="message">Message</label><br>
+                        <textarea id="message" name="message_to_recipient" placeholder="I love you right up to the moon—and back." readonly></textarea><br>
+                        <p>Yours Lovingly, </p><br>
+                        <input type="text" id="sender_name" name="sender" placeholder="your name" readonly>
+                    </form>
+                </div>
+
+                <div class="address">
+                    <div>
+                        <img src="http://i44.photobucket.com/albums/f9/dandee114/stamp_zpsvbuxiwih.png" class="mail_stamp" alt="Mail Stamp">
+                        <!-- Marie's Image Initially Hidden -->
+                        <img src="marie.jpg" alt="Marie" style="height: 300px; width: auto; margin-top: 10px; border-radius: 25px; border: 2px solid beige; display: none;" id="marie-image">
+                    </div>
+                    <!-- Removed the recipient's email form below -->
+                    <div style="margin-top: 10px; margin-right: 100px;">
+                        <p id="address">España Blvd,<br>
+                            Sampaloc Manila,<br>
+                            1008 Metro Manila
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <footer>
+    </footer>
+
+    <!-- Response Buttons -->
+    <div id="response-buttons">
+        <button id="yes-button">Yes</button>
+        <button id="no-button">No</button>
+    </div>
+
+    <!-- tsParticles Library -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+
+    <!-- JavaScript to Handle Special Typing into the Message Textarea, Sender's Input Field, and Confetti Effect -->
+    <script>
+        // Define the special message to be typed
+        const specialMessage = "Hi bb!!!, I would like to cordially invite you to the Paskuhan 2024 at UST. Would you like to accompany me as my date on December 20, 2024 at the Paskuhan Festivities?";
+
+        // Define your name to be typed into the sender's input field
+        const senderName = "Neil";
+
+        // Function to simulate typing into the textarea or input field
+        function typeMessage(text, element, delay = 100, callback = null) {
+            let index = 0;
+            element.value = ''; // Clear existing content
+            const typingInterval = setInterval(() => {
+                if (index < text.length) {
+                    element.value += text.charAt(index);
+                    index++;
+                    // Optional: Scroll to the bottom as text is added (useful for textarea)
+                    if (element.tagName.toLowerCase() === 'textarea') {
+                        element.scrollTop = element.scrollHeight;
+                    }
+                } else {
+                    clearInterval(typingInterval);
+                    if (callback) callback();
+                }
+            }, delay);
+        }
+
+        // Function to create and animate emojis
+        function createEmoji(button, emoji) {
+            const emojiElement = document.createElement('span');
+            emojiElement.textContent = emoji;
+            emojiElement.classList.add('emoji');
+
+            // Get button's position relative to the viewport
+            const rect = button.getBoundingClientRect();
+
+            // Position the emoji at the center of the button
+            emojiElement.style.left = `${rect.left + rect.width / 2}px`;
+            emojiElement.style.top = `${rect.top}px`;
+
+            document.body.appendChild(emojiElement);
+
+            // Remove the emoji after the animation duration (1s)
+            setTimeout(() => {
+                emojiElement.remove();
+            }, 1000);
+        }
+
+        // Function to check the recipient's name and trigger typing if it's "Marie"
+        function checkRecipientName() {
+            const recipientInput = document.getElementById('recipient');
+            const messageTextarea = document.getElementById('message');
+            const senderInput = document.getElementById('sender_name');
+            const marieImage = document.getElementById('marie-image'); // Get the marie-image element
+            const responseButtons = document.getElementById('response-buttons'); // Get the response buttons div
+            const name = recipientInput.value.trim().toLowerCase();
+
+            // Check if the name is "marie" (case-insensitive)
+            if (name === 'marie') {
+                // Remove the event listener to prevent multiple triggers during typing
+                recipientInput.removeEventListener('input', checkRecipientName);
+                // Simulate typing the special message into the textarea
+                typeMessage(specialMessage, messageTextarea, 50, () => {
+                    // After the message is fully typed, simulate typing your name into the sender's input
+                    typeMessage(senderName, senderInput, 150, () => {
+                        // After both typing actions are complete, show the image
+                        marieImage.style.display = 'block';
+                        // Add a fade-in effect using JavaScript
+                        marieImage.style.opacity = 0;
+                        marieImage.style.transition = 'opacity 2s';
+                        setTimeout(() => {
+                            marieImage.style.opacity = 1;
+                        }, 10); // Slight delay to ensure transition
+
+                        // Show the response buttons
+                        responseButtons.style.display = 'block';
+
+                        // Re-add the event listener after all typing is complete
+                        recipientInput.addEventListener('input', checkRecipientName);
+                    });
+                });
+            }
+        }
+
+        // Add event listener to the recipient input field
+        document.getElementById('recipient').addEventListener('input', checkRecipientName);
+
+        // Initialize tsParticles (Confetti) - Define the configuration
+        function loadConfetti() {
+            tsParticles.load("tsparticles", {
+                "particles": {
+                    "number": {
+                        "value": 0
+                    },
+                    "color": {
+                        "value": [
+                            "#1E00FF",
+                            "#FF0061",
+                            "#E1FF00",
+                            "#00FF9E"
+                        ]
+                    },
+                    "shape": {
+                        "type": ["circle", "square", "heart"]
+                    },
+                    "opacity": {
+                        "value": 1
+                    },
+                    "size": {
+                        "value": 10,
+                        "random": {
+                            "enable": true,
+                            "minimumValue": 5
+                        }
+                    },
+                    "move": {
+                        "enable": true,
+                        "direction": "top",
+                        "outModes": {
+                            "default": "destroy"
+                        },
+                        "speed": {
+                            "min": 10,
+                            "max": 30
+                        }
+                    },
+                    "rotate": {
+                        "value": {
+                            "min": 0,
+                            "max": 360
+                        },
+                        "animation": {
+                            "enable": true,
+                            "speed": 10
+                        }
+                    }
+                },
+                "emitters": {
+                    "position": {
+                        "x": 50,
+                        "y": 100
+                    },
+                    "rate": {
+                        "quantity": 10,
+                        "delay": 0.1
+                    },
+                    "size": {
+                        "width": 0,
+                        "height": 0
+                    }
+                },
+                "fullScreen": {
+                    "enable": false
+                }
+            });
+        }
+
+        // Function to play confetti
+        function playConfetti() {
+            // Ensure tsParticles is loaded before attempting to play
+            if (tsParticles) {
+                // Load tsParticles if not already loaded
+                loadConfetti();
+            }
+        }
+
+        // Add event listeners to the response buttons
+        document.getElementById('yes-button').addEventListener('click', function () {
+            // Define the number of heart emojis to generate
+            const heartCount = 5;
+            for (let i = 0; i < heartCount; i++) {
+                createEmoji(this, '❤️');
+            }
+
+            // Play confetti across the whole page
+            playConfetti();
+        });
+
+        document.getElementById('no-button').addEventListener('click', function () {
+            // Define the number of sobbing emojis to generate
+            const sobCount = 5;
+            for (let i = 0; i < sobCount; i++) {
+                createEmoji(this, '😭');
+            }
+        });
+    </script>
+</body>
+
+</html>
